@@ -1,6 +1,4 @@
-import { useSignIn } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -11,75 +9,69 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-
-import { Image } from "expo-image";
-
+import { useRouter } from "expo-router";
+import { useSignUp } from "@clerk/clerk-expo";
+import { useState } from "react";
 import { authStyles } from "../../assets/styles/auth.styles";
+import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
+import { Ionicons } from "@expo/vector-icons";
+import VerifyEmail from "./verify-email";
 
-const SignInScreen = () => {
+const SignUpScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const { isLoaded, signUp } = useSignUp();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [pendingVerification, setPendingVerification] = useState<boolean>(false);
 
-  const { signIn, setActive, isLoaded } = useSignIn();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
+  const handleSignUp = async (): Promise<void> => {
+    if (!email || !password) return Alert.alert("Error", "Please fill in all fields");
+    if (password.length < 6) return Alert.alert("Error", "Password must be at least 6 characters");
 
     if (!isLoaded) return;
 
     setLoading(true);
 
     try {
-      const signInAttempt = await signIn.create({
-        identifier: email,
-        password,
-      });
-
-      if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId });
-      } else {
-        Alert.alert("Error", "Sign in failed. Please try again.");
-        console.error(JSON.stringify(signInAttempt, null, 2));
-      }
-    } catch (err) {
-      Alert.alert("Error", err.errors?.[0]?.message || "Sign in failed");
+      await signUp.create({ emailAddress: email, password });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setPendingVerification(true);
+    } catch (err: any) {
+      Alert.alert("Error", err.errors?.[0]?.message || "Failed to create account");
       console.error(JSON.stringify(err, null, 2));
     } finally {
       setLoading(false);
     }
   };
 
+  if (pendingVerification)
+    return <VerifyEmail email={email} onBack={() => setPendingVerification(false)} />;
+
   return (
     <View style={authStyles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={authStyles.keyboardView}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        style={authStyles.keyboardView}
       >
         <ScrollView
           contentContainerStyle={authStyles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          {/* Image Container */}
           <View style={authStyles.imageContainer}>
             <Image
-              source={require("../../assets/images/i1.png")}
+              source={require("../../assets/images/i2.png")}
               style={authStyles.image}
               contentFit="contain"
             />
           </View>
 
-          <Text style={authStyles.title}>Welcome Back</Text>
+          <Text style={authStyles.title}>Create Account</Text>
 
-          {/* FORM CONTAINER */}
           <View style={authStyles.formContainer}>
             {/* Email Input */}
             <View style={authStyles.inputContainer}>
@@ -94,7 +86,7 @@ const SignInScreen = () => {
               />
             </View>
 
-            {/* PASSWORD INPUT */}
+            {/* Password Input */}
             <View style={authStyles.inputContainer}>
               <TextInput
                 style={authStyles.textInput}
@@ -117,22 +109,22 @@ const SignInScreen = () => {
               </TouchableOpacity>
             </View>
 
+            {/* Sign Up Button */}
             <TouchableOpacity
               style={[authStyles.authButton, loading && authStyles.buttonDisabled]}
-              onPress={handleSignIn}
+              onPress={handleSignUp}
               disabled={loading}
               activeOpacity={0.8}
             >
-              <Text style={authStyles.buttonText}>{loading ? "Signing In..." : "Sign In"}</Text>
+              <Text style={authStyles.buttonText}>
+                {loading ? "Creating Account..." : "Sign Up"}
+              </Text>
             </TouchableOpacity>
 
-            {/* Sign Up Link */}
-            <TouchableOpacity
-              style={authStyles.linkContainer}
-              onPress={() => router.push("/(auth)/sign-up")}
-            >
+            {/* Sign In Link */}
+            <TouchableOpacity style={authStyles.linkContainer} onPress={() => router.back()}>
               <Text style={authStyles.linkText}>
-                Don&apos;t have an account? <Text style={authStyles.link}>Sign up</Text>
+                Already have an account? <Text style={authStyles.link}>Sign In</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -141,4 +133,5 @@ const SignInScreen = () => {
     </View>
   );
 };
-export default SignInScreen;
+
+export default SignUpScreen;

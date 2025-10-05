@@ -1,14 +1,16 @@
+import React from "react";
 import { useAuth } from "@clerk/clerk-expo";
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS } from "../../constants/colors";
 
-const TabsLayout = () => {
+const TabsLayout = (): React.JSX.Element | null => {
   const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) return null;
 
-  if (!isSignedIn) return <Redirect href={"/(auth)/sign-in"} />;
+  if (!isSignedIn) return <Redirect href={"/(auth)/sign-in" as any} />;
 
   return (
     <Tabs
@@ -54,4 +56,5 @@ const TabsLayout = () => {
     </Tabs>
   );
 };
+
 export default TabsLayout;

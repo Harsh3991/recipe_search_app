@@ -1,7 +1,16 @@
+import React from "react";
 import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 import { COLORS } from "../constants/colors";
 
-export default function LoadingSpinner({ message = "Loading...", size = "large" }) {
+interface LoadingSpinnerProps {
+  message?: string;
+  size?: "small" | "large";
+}
+
+export default function LoadingSpinner({ 
+  message = "Loading...", 
+  size = "large" 
+}: LoadingSpinnerProps): React.JSX.Element {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
