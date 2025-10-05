@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -5,13 +6,26 @@ import { useRouter } from "expo-router";
 import { COLORS } from "../constants/colors";
 import { recipeCardStyles } from "../assets/styles/home.styles";
 
-export default function RecipeCard({ recipe }) {
+interface Recipe {
+  id: string;
+  title: string;
+  description?: string;
+  image: string;
+  cookTime?: string;
+  servings?: number;
+}
+
+interface RecipeCardProps {
+  recipe: Recipe;
+}
+
+export default function RecipeCard({ recipe }: RecipeCardProps): React.JSX.Element {
   const router = useRouter();
 
   return (
     <TouchableOpacity
       style={recipeCardStyles.container}
-      onPress={() => router.push(`/recipe/${recipe.id}`)}
+      onPress={() => router.push(`/recipe/${recipe.id}` as any)}
       activeOpacity={0.8}
     >
       <View style={recipeCardStyles.imageContainer}>

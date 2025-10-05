@@ -1,8 +1,25 @@
+import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import { homeStyles } from "../assets/styles/home.styles";
 
-export default function CategoryFilter({ categories, selectedCategory, onSelectCategory }) {
+interface Category {
+  id: string | number;
+  name: string;
+  image: string;
+}
+
+interface CategoryFilterProps {
+  categories: Category[];
+  selectedCategory: string;
+  onSelectCategory: (categoryName: string) => void;
+}
+
+export default function CategoryFilter({ 
+  categories, 
+  selectedCategory, 
+  onSelectCategory 
+}: CategoryFilterProps): React.JSX.Element {
   return (
     <View style={homeStyles.categoryFilterContainer}>
       <ScrollView

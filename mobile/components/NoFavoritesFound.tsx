@@ -1,10 +1,11 @@
+import React from "react";
 import { useRouter } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/colors";
 import { favoritesStyles } from "@/assets/styles/favorites.styles";
 
-function NoFavoritesFound() {
+function NoFavoritesFound(): React.JSX.Element {
   const router = useRouter();
 
   return (

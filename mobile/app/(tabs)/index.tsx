@@ -1,7 +1,8 @@
+import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, FlatList, RefreshControl } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { MealAPI } from "../../services/mealAPI";
+import { MealAPI, Meal } from "../../services/mealAPI";
 import { homeStyles } from "../../assets/styles/home.styles";
 import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
@@ -10,18 +11,25 @@ import CategoryFilter from "../../components/CategoryFilter";
 import RecipeCard from "../../components/RecipeCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+interface HomeCategory {
+  id: number;
+  name: string;
+  image: string;
+  description: string;
+}
 
-const HomeScreen = () => {
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+const HomeScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [recipes, setRecipes] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [featuredRecipe, setFeaturedRecipe] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [recipes, setRecipes] = useState<Meal[]>([]);
+  const [categories, setCategories] = useState<HomeCategory[]>([]);
+  const [featuredRecipe, setFeaturedRecipe] = useState<Meal | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     try {
       setLoading(true);
 
@@ -31,7 +39,7 @@ const HomeScreen = () => {
         MealAPI.getRandomMeal(),
       ]);
 
-      const transformedCategories = apiCategories.map((cat, index) => ({
+      const transformedCategories: HomeCategory[] = apiCategories.map((cat, index) => ({
         id: index + 1,
         name: cat.strCategory,
         image: cat.strCategoryThumb,
@@ -40,11 +48,11 @@ const HomeScreen = () => {
 
       setCategories(transformedCategories);
 
-      if (!selectedCategory) setSelectedCategory(transformedCategories[0].name);
+      if (!selectedCategory) setSelectedCategory(transformedCategories[0]?.name || null);
 
       const transformedMeals = randomMeals
         .map((meal) => MealAPI.transformMealData(meal))
-        .filter((meal) => meal !== null);
+        .filter((meal): meal is Meal => meal !== null);
 
       setRecipes(transformedMeals);
 
@@ -57,12 +65,12 @@ const HomeScreen = () => {
     }
   };
 
-  const loadCategoryData = async (category) => {
+  const loadCategoryData = async (category: string): Promise<void> => {
     try {
       const meals = await MealAPI.filterByCategory(category);
       const transformedMeals = meals
         .map((meal) => MealAPI.transformMealData(meal))
-        .filter((meal) => meal !== null);
+        .filter((meal): meal is Meal => meal !== null);
       setRecipes(transformedMeals);
     } catch (error) {
       console.error("Error loading category data:", error);
@@ -70,12 +78,12 @@ const HomeScreen = () => {
     }
   };
 
-  const handleCategorySelect = async (category) => {
+  const handleCategorySelect = async (category: string): Promise<void> => {
     setSelectedCategory(category);
     await loadCategoryData(category);
   };
 
-  const onRefresh = async () => {
+  const onRefresh = async (): Promise<void> => {
     setRefreshing(true);
     // await sleep(2000);
     await loadData();
@@ -86,7 +94,7 @@ const HomeScreen = () => {
     loadData();
   }, []);
 
-  if (loading && !refreshing) return <LoadingSpinner message="Loading delicions recipes..." />;
+  if (loading && !refreshing) return <LoadingSpinner message="Loading delicious recipes..." />;
 
   return (
     <View style={homeStyles.container}>
@@ -132,7 +140,7 @@ const HomeScreen = () => {
             <TouchableOpacity
               style={homeStyles.featuredCard}
               activeOpacity={0.9}
-              onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}
+              onPress={() => router.push(`/recipe/${featuredRecipe.id}` as any)}
             >
               <View style={homeStyles.featuredImageContainer}>
                 <Image
@@ -177,7 +185,7 @@ const HomeScreen = () => {
         {categories.length > 0 && (
           <CategoryFilter
             categories={categories}
-            selectedCategory={selectedCategory}
+            selectedCategory={selectedCategory || ""}
             onSelectCategory={handleCategorySelect}
           />
         )}
@@ -210,4 +218,5 @@ const HomeScreen = () => {
     </View>
   );
 };
+
 export default HomeScreen;

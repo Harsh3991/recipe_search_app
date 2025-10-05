@@ -1,3 +1,4 @@
+import React from "react";
 import { useSignUp } from "@clerk/clerk-expo";
 import { useState } from "react";
 import {
@@ -13,12 +14,18 @@ import {
 import { authStyles } from "../../assets/styles/auth.styles";
 import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
-const VerifyEmail = ({ email, onBack }) => {
-  const { isLoaded, signUp, setActive } = useSignUp();
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleVerification = async () => {
+interface VerifyEmailProps {
+  email: string;
+  onBack: () => void;
+}
+
+const VerifyEmail: React.FC<VerifyEmailProps> = ({ email, onBack }) => {
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const [code, setCode] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleVerification = async (): Promise<void> => {
     if (!isLoaded) return;
 
     setLoading(true);
@@ -31,7 +38,7 @@ const VerifyEmail = ({ email, onBack }) => {
         Alert.alert("Error", "Verification failed. Please try again.");
         console.error(JSON.stringify(signUpAttempt, null, 2));
       }
-    } catch (err) {
+    } catch (err: any) {
       Alert.alert("Error", err.errors?.[0]?.message || "Verification failed");
       console.error(JSON.stringify(err, null, 2));
     } finally {
@@ -99,4 +106,5 @@ const VerifyEmail = ({ email, onBack }) => {
     </View>
   );
 };
+
 export default VerifyEmail;
